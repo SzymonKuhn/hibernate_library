@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Author implements IBaseEntity{
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -25,9 +25,16 @@ public class Author implements IBaseEntity{
 
     // możemy z tej strony dodawać (książki do autorów) żeby tworzyć relacje
     @EqualsAndHashCode.Exclude
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private Set<Book> books;
 
-    @Formula(value = ("(SELECT COUNT(*) FROM author_book ab WHERE ab.author_id = id)"))
+    @Formula(value = ("(SELECT COUNT(*) FROM author_book ab WHERE ab.authors_id = id)"))
     private Long numberOfBooks;
+
+    public void addBook (Book book) {
+        if (books == null) {
+            books = new HashSet<>();
+        }
+        books.add(book);
+    }
 }
