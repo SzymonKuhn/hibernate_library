@@ -63,13 +63,14 @@ public class PublishingHouseDao {
     }
 
     // delete
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         Optional<PublishingHouse> optionalEntity = getById(id);
 
         if (optionalEntity.isPresent()) {
             delete(optionalEntity.get());
+            return true;
         } else {
-            System.err.println("Nie udało się odnaleźć instancji");
+            return false;
         }
     }
 
@@ -77,9 +78,7 @@ public class PublishingHouseDao {
         SessionFactory factory = HibernateUtil.getSessionFactory();
         try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
-
             session.delete(publishingHouse);
-
             transaction.commit();
         }
     }

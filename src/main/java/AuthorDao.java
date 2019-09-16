@@ -63,13 +63,14 @@ public class AuthorDao {
     }
 
     // delete
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         Optional<Author> optionalEntity = getById(id);
 
         if (optionalEntity.isPresent()) {
             delete(optionalEntity.get());
+            return true;
         } else {
-            System.err.println("Nie udało się odnaleźć instancji");
+            return false;
         }
     }
 

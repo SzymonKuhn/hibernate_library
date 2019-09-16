@@ -4,14 +4,16 @@ import java.util.*;
 public class Main {
 
     private final static Scanner scanner = new Scanner(System.in);
+    private final static ClientDao clientDao = new ClientDao();
+    private final static AuthorDao authorDao = new AuthorDao();
+    private final static BookDao bookDao = new BookDao();
+
+    private final static PublishingHouseDao publishingHouseDao = new PublishingHouseDao();
+    private final static BookLentDao bookLentDao = new BookLentDao();
 
     public static void main(String[] args) {
         HibernateUtil.getSessionFactory().openSession().close();
-        AuthorDao authorDao = new AuthorDao();
-        BookDao bookDao = new BookDao();
-        ClientDao clientDao = new ClientDao();
-        PublishingHouseDao publishingHouseDao = new PublishingHouseDao();
-        BookLentDao bookLentDao = new BookLentDao();
+
 
 
 
@@ -30,12 +32,10 @@ public class Main {
             } else if (option == 3){   //    3. -> usuń autora po id
                 System.out.println("Wpisz id");
                 Long id = getLongFromUser();
-                authorDao.delete(id);
+                System.out.println(authorDao.delete(id));
 
             } else if (option == 4){   //    4. -> zmień dane autora
-                System.out.println("Wpisz id");
-                Long id = getLongFromUser();
-                Author author = authorDao.getById(id).get();
+                Author author = getAuthorFromDB();
                 author = modifyAuthor(author);
                 authorDao.saveOrUpdate(author);
 
@@ -49,12 +49,10 @@ public class Main {
             } else if (option == 7){   //    7. -> usuń książkę po id
                 System.out.println("Wpisz id");
                 Long id = getLongFromUser();
-                bookDao.delete(id);
+                System.out.println(bookDao.delete(id));
 
             } else if (option == 8){   //    8. -> zmień dane książki
-                System.out.println("Wpisz id");
-                Long id = getLongFromUser();
-                Book book = bookDao.getById(id).get();
+                Book book = getBookFromDB();
                 book = modifyBook(book);
                 bookDao.saveOrUpdate(book);
 
@@ -68,12 +66,10 @@ public class Main {
             } else if (option == 11){//    11. -> usuń klienta po id
                 System.out.println("Wpisz id");
                 Long id = getLongFromUser();
-                clientDao.delete(id);
+                System.out.println(clientDao.delete(id));
 
             } else if (option == 12){//    12. -> zmień dane klienta
-                System.out.println("Wpisz id");
-                Long id = getLongFromUser();
-                Client client = clientDao.getById(id).get();
+                Client client = getClientFromDB();
                 client = modifyClient(client);
                 clientDao.saveOrUpdate(client);
 
@@ -87,35 +83,30 @@ public class Main {
             } else if (option == 15) {//    15. -> usuń wydawnictwo
                 System.out.println("Wpisz id");
                 Long id = getLongFromUser();
-                publishingHouseDao.delete(id);
+                System.out.println(publishingHouseDao.delete(id));
 
             } else if (option == 16){//    16. -> zmień dane wydawnictwa
-                System.out.println("Wpisz id");
-                Long id = getLongFromUser();
-                PublishingHouse publishingHouse = publishingHouseDao.getById(id).get();
+                PublishingHouse publishingHouse = getPublishingHouseFromDB();
                 publishingHouse = modifyPublishingHouse(publishingHouse);
                 publishingHouseDao.saveOrUpdate(publishingHouse);
 
             } else if (option == 17){//    17. -> dodaj książkę do autora
-                System.out.println("Podaj id autora:");
                 authorDao.getAll().forEach(System.out::println);
-                Long idAuthor = getLongFromUser();
-                System.out.println("Podaj id książki");
+                Author author = getAuthorFromDB();
+
                 bookDao.getAll().forEach(System.out::println);
-                Long idBook = getLongFromUser();
-                Author author = authorDao.getById(idAuthor).get();
-                author.addBook(bookDao.getById(idBook).get());
+                Book book = getBookFromDB();
+
+                author.addBook(book);
                 authorDao.saveOrUpdate(author);
 
             } else if (option == 18){//    18. -> dodaj wypożyczenie (klient + książka)
-                System.out.println("Wpisz id kienta");
                 clientDao.getAll().forEach(System.out::println);
-                Long idClient = getLongFromUser();
-                Client client = clientDao.getById(idClient).get();
-                System.out.println("Wpisz id książki");
+                Client client = getClientFromDB();
+
                 bookDao.getAll().forEach(System.out::println);
-                Long idBook = getLongFromUser();
-                Book book = bookDao.getById(idBook).get();
+                Book book = getBookFromDB();
+
                 if (book.getNumOfAllCopies() > book.getNumOfBorrowedCopies()) {
                     LocalDate localDate = LocalDate.now();
                     BookLent bookLent = new BookLent();
@@ -133,13 +124,13 @@ public class Main {
                 System.out.println("Wpisz nazwisko lub fragment nazwiska");
                 String name = scanner.nextLine();
                 List<Author> authors = authorDao.getByName(name);
-                authors.forEach(System.out::println);
+                printListIfNotEmpty(authors);
 
             } else if (option == 20){//    20. -> znajdź klientów po nazwisku
                 System.out.println("Wpisz nazwisko lub fragment nazwiska");
                 String name = scanner.nextLine();
                 List<Client> clients = clientDao.getByName(name);
-                clients.forEach(System.out::println);
+                printListIfNotEmpty(clients);
 
             } else if (option == 21){//    21. -> znajdź klienta po Id number
                 Optional<Client> clientOptional;
@@ -158,61 +149,60 @@ public class Main {
                 Long id = getLongFromUser();
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getBooksBorrowedByClient(id));
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
+
 
             } else if (option == 23){//    23. -> wypisz książki nie zwrócone przez klienta
                 System.out.println("Wpisz id klienta");
                 Long id = getLongFromUser();
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getBooksNotReturnedByClient(id));
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
             } else if (option == 24){//    24. -> wypisz książki których są jeszcze kopie do pożyczenia
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getAvailableBooks());
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
             } else if (option == 25){//    25. -> wypisz książki których nie ma juz kopii do pożyczenia
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getNotAvailableBooks());
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
             } else if (option == 26){//    26. -> wypisz książki które nie zostały zwrócone
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getNotReturnedBooks());
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
             } else if (option == 27){//    27. -> wypisz ksiązki które zostały zwrócone w ciągu ostatnich N godzin
                 System.out.println("Wpisz liczbę dni");
                 int days = getIntFromUser();
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getBooksReturnedInLastDays(days));
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
             } else if (option == 28){//    28. -> wypisz książki które zostały wypożyczone w ciągu ostatnich 24 godzin
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getBooksBorrowedDuringLastDay());
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
-            } else if (option == 29){//    29. -> wypisz najczęściej wypożyczone książki
+            } else if (option == 29){//    29. -> lista książek od najchętniej wypożyczanych
                 List<Book> books = new ArrayList<>();
                 books.addAll(bookDao.getMostPopularBooks());
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
-            } else if (option == 30){//    30. -> znajdź najbardziej aktywnego klienta
+            } else if (option == 30){//    30. -> lista klientów od najczęściej pożyczających
                 List<Client> clients = new ArrayList<>();
                 clients.addAll(clientDao.getMostActiveClients());
-                clients.forEach(System.out::println);
+                printListIfNotEmpty(clients);
 
             } else if (option == 31){//    31. -> dodaj wydawnictwo do książki
                 bookDao.getAll().forEach(System.out::println);
-                System.out.println("Wpisz id książki");
-                Long bookId = getLongFromUser();
-                Book book = bookDao.getById(bookId).get();
+                Book book = getBookFromDB();
+
                 publishingHouseDao.getAll().forEach(System.out::println);
-                System.out.println("wpisz id wydawnictwa");
-                Long publishingHouseId = getLongFromUser();
-                PublishingHouse publishingHouse = publishingHouseDao.getById(publishingHouseId).get();
+                PublishingHouse publishingHouse = getPublishingHouseFromDB();
+
                 book.setPublishingHouse(publishingHouse);
                 System.out.println("dodano wydawnictwo: " + book);
                 System.out.println("zaktualizowano: " + bookDao.saveOrUpdate(book));
@@ -222,9 +212,9 @@ public class Main {
                 System.out.println("wpisz id wydawnictwa");
                 Long id = getLongFromUser();
                 books.addAll(bookDao.getBooksByPublishingHouse(id));
-                books.forEach(System.out::println);
+                printListIfNotEmpty(books);
 
-            } else if (option == 33) {//   33. -> oddaj książkę
+            } else if (option == 33) {//   33. -> oddaj książkę //TODO Refactor
                 System.out.println("podaj id klienta");
                 Long clientId = getLongFromUser();
                 List<Book> books = bookDao.getBooksNotReturnedByClient(clientId);
@@ -245,9 +235,55 @@ public class Main {
                 }
             }
         } while (option!=0);
-
-
     }//main
+
+    private static <T> void printListIfNotEmpty(List<T> list) {
+        if (!list.isEmpty()) {
+            list.forEach(System.out::println);
+        } else {
+            System.out.println("nie znaleziono instancji");
+        }
+    }
+
+    private static PublishingHouse getPublishingHouseFromDB() {
+        Optional<PublishingHouse> optionalPublishingHouse;
+        do {
+            System.out.println("Wpisz id");
+            Long id = getLongFromUser();
+            optionalPublishingHouse = publishingHouseDao.getById(id);
+        } while (!optionalPublishingHouse.isPresent());
+        return optionalPublishingHouse.get();
+    }
+
+    private static Book getBookFromDB() {
+        Optional<Book> optionalBook;
+        do {
+            System.out.println("Wpisz id");
+            Long id = getLongFromUser();
+            optionalBook = bookDao.getById(id);
+        } while (!optionalBook.isPresent());
+        return optionalBook.get();
+    }
+
+    private static Author getAuthorFromDB() {
+        Optional<Author> authorOptional;
+        do {
+            System.out.println("Wpisz id");
+            Long id = getLongFromUser();
+            authorOptional = authorDao.getById(id);
+        } while (!authorOptional.isPresent());
+        return authorOptional.get();
+    }
+
+    private static Client getClientFromDB() {
+        Optional<Client> optionalClient;
+        do {
+            System.out.println("Wpisz id");
+            Long id = getLongFromUser();
+            optionalClient = clientDao.getById(id);
+        } while (!optionalClient.isPresent());
+        return optionalClient.get();
+    }
 
     private static BookLent getBooklentToReturnFromBooklents(List<BookLent> booklents) {
         BookLent booklentToReturn = null;
@@ -385,13 +421,20 @@ public class Main {
     }
 
     private static LocalDate getDateFromUser() {
-        System.out.println("Wpisz rok");
-        int year = getIntFromUser();
-        System.out.println("Wpisz miesiąc");
-        int month = getIntFromUser();
-        System.out.println("Wpisz dzień");
-        int day = getIntFromUser();
-        LocalDate date = LocalDate.of(year, month, day);
+        LocalDate date = null;
+        do {
+            System.out.println("Wpisz rok");
+            int year = getIntFromUser();
+            System.out.println("Wpisz miesiąc");
+            int month = getIntFromUser();
+            System.out.println("Wpisz dzień");
+            int day = getIntFromUser();
+            try {
+                date = LocalDate.of(year, month, day);
+            } catch (Exception e) {
+                System.out.println("podano błędne dane");
+            }
+        } while (date == null);
         return  date;
     }
 
@@ -429,8 +472,8 @@ public class Main {
         System.out.println("26. -> wypisz książki które nie zostały zwrócone");
         System.out.println("27. -> wypisz ksiązki które zostały zwrócone w ciągu ostatnich N godzin");
         System.out.println("28. -> wypisz książki które zostały wypożyczone w ciągu ostatnich 24 godzin");
-        System.out.println("29. -> wypisz najczęściej wypożyczone książki");
-        System.out.println("30. -> znajdź najbardziej aktywnego klienta");
+        System.out.println("29. -> lista książek od najchętniej wypożyczanych");
+        System.out.println("30. -> lista klientów od najczęściej pożyczających");
         System.out.println("31. -> dodaj wydawnictwo do książki");
         System.out.println("32. -> wypisz książki po wydawnictwie");
         System.out.println("33. -> oddaj książkę");
@@ -445,7 +488,6 @@ public class Main {
                 value = Integer.parseInt(input);
             } catch (NumberFormatException nfe) {
                 System.out.println("Błędne dane");
-                nfe.printStackTrace();
             }
         } while (value == null);
         return value;
@@ -459,7 +501,6 @@ public class Main {
                 value = Long.parseLong(input);
             } catch (NumberFormatException nfe) {
                 System.out.println("Błędne dane");
-                nfe.printStackTrace();
             }
         } while (value == null);
         return value;
@@ -473,7 +514,6 @@ public class Main {
                 value = Double.parseDouble(input);
             } catch (NumberFormatException nfe) {
                 System.out.println("Błędne dane");
-                nfe.printStackTrace();
             }
         } while (value == null);
         return value;
