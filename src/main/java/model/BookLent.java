@@ -1,8 +1,8 @@
+package model;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import net.bytebuddy.asm.Advice;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;

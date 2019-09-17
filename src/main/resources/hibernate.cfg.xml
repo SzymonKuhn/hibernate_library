@@ -19,11 +19,11 @@
         <!-- create-drop - uruchom connector, stworz tabele kolumny, a po zakończeniu dropuj-->
         <!-- validate - weryfikuje poprawność bazy -->
         <property name="hbm2ddl.auto">update</property>
-        <property name="show_sql">true</property>
-        <mapping class="Author"/>
-        <mapping class="Book"/>
-        <mapping class="BookLent"/>
-        <mapping class="Client"/>
-        <mapping class="PublishingHouse"/>
+        <property name="show_sql">false</property>
+        <mapping class="model.Author"/>
+        <mapping class="model.Book"/>
+        <mapping class="model.BookLent"/>
+        <mapping class="model.Client"/>
+        <mapping class="model.PublishingHouse"/>
     </session-factory>
 </hibernate-configuration>

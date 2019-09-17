@@ -1,7 +1,11 @@
+package dao;
+
+import model.Author;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import util.HibernateUtil;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -18,9 +22,7 @@ public class AuthorDao {
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-
             session.saveOrUpdate(author);
-
             transaction.commit();
             success = true;
         } catch (HibernateException he) {
@@ -35,15 +37,10 @@ public class AuthorDao {
         List<Author> list = new ArrayList<>();
         SessionFactory factory = HibernateUtil.getSessionFactory();
         try (Session session = factory.openSession()) {
-
             CriteriaBuilder cb = session.getCriteriaBuilder();
-
             CriteriaQuery<Author> criteriaQuery = cb.createQuery(Author.class);
-
             Root<Author> rootTable = criteriaQuery.from(Author.class);
-
             criteriaQuery.select(rootTable);
-
             list.addAll(session.createQuery(criteriaQuery).list());
         } catch (HibernateException e) {
             e.printStackTrace();
@@ -55,14 +52,11 @@ public class AuthorDao {
     public Optional<Author> getById(Long id) {
         SessionFactory factory = HibernateUtil.getSessionFactory();
         try (Session session = factory.openSession()) {
-
             Author entity = session.get(Author.class, id);
-
             return Optional.ofNullable(entity);
         }
     }
 
-    // delete
     public boolean delete(Long id) {
         Optional<Author> optionalEntity = getById(id);
 
@@ -78,27 +72,19 @@ public class AuthorDao {
         SessionFactory factory = HibernateUtil.getSessionFactory();
         try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
-
             session.delete(author);
-
             transaction.commit();
         }
     }
 
-    public void addBookToAuthor (Author author, Book book) {
-        author.addBook(book);
-        saveOrUpdate(author);
-    }
-
     public List<Author> getByName(String name) {
-        List<Author> authors = new ArrayList<>();
+        List<Author> authors;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
             CriteriaQuery<Author> query = criteriaBuilder.createQuery(Author.class);
             Root<Author> root = query.from(Author.class);
-
             query.select(root).where(criteriaBuilder.like(root.get("surname"), "%" + name + "%"));
-            authors.addAll(session.createQuery(query).getResultList());
+            authors = new ArrayList<>(session.createQuery(query).getResultList());
         }
         return authors;
     }

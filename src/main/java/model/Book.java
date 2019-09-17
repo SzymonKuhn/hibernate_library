@@ -1,20 +1,17 @@
-
+package model;
 
 
 import lombok.*;
 import org.hibernate.annotations.Formula;
-import org.hibernate.annotations.OnDelete;
 
 import javax.persistence.*;
-import java.time.Year;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Book implements IBaseEntity{
+public class Book implements IBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,14 +1,18 @@
+package dao;
+
+import model.BookLent;
+import model.Client;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import util.HibernateUtil;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +59,6 @@ public class ClientDao {
         }
     }
 
-    // delete
     public boolean delete(Long id) {
         Optional<Client> optionalEntity = getById(id);
         if (optionalEntity.isPresent()) {
@@ -76,13 +79,13 @@ public class ClientDao {
     }
 
     public List<Client> getByName(String name) {
-        List<Client> clients = new ArrayList<>();
+        List<Client> clients;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
             CriteriaQuery<Client> query = criteriaBuilder.createQuery(Client.class);
             Root<Client> root = query.from(Client.class);
             query.select(root).where(criteriaBuilder.like(root.get("surname"), "%"+name+"%"));
-            clients.addAll(session.createQuery(query).getResultList());
+            clients = new ArrayList<>(session.createQuery(query).getResultList());
         }
         return clients;
     }
@@ -97,11 +100,10 @@ public class ClientDao {
             client = session.createQuery(query).uniqueResultOptional();
         }
         return client;
-
     }
 
     public List<Client> getMostActiveClients() {
-        List<Client> clients = new ArrayList<>();
+        List<Client> clients;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
             CriteriaQuery<Client> queryForClient = criteriaBuilder.createQuery(Client.class);
@@ -110,7 +112,7 @@ public class ClientDao {
             queryForClient.select(booklentJoinClient);
             queryForClient.groupBy(rootBookLent.get("client"));
             queryForClient.orderBy(criteriaBuilder.desc(criteriaBuilder.count(rootBookLent.get("client"))));
-            clients.addAll(session.createQuery(queryForClient).getResultList());
+            clients = new ArrayList<>(session.createQuery(queryForClient).getResultList());
         }
         return clients;
     }

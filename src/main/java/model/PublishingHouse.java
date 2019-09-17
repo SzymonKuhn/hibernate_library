@@ -1,3 +1,5 @@
+package model;
+
 import lombok.*;
 
 import javax.persistence.*;
@@ -8,7 +10,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 
-public class PublishingHouse implements IBaseEntity{
+public class PublishingHouse implements IBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
